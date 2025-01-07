@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"nwn_server_info/udp"
 
@@ -30,22 +31,19 @@ func (jr *JSONResponse) CustomResponse(logger *logrus.Logger, w http.ResponseWri
 }
 
 func GetPlayersOnline(logger *logrus.Logger, w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
-	ip := queryParams.Get("ip")
-	port := queryParams.Get("port")
+	ip := r.URL.Query().Get("ip")
+	port := r.URL.Query().Get("port")
 
-	if ip == "" {
-		jsonResponse := &JSONResponse{Result: "ERROR", Message: "No ip provided in the parameters"}
+	fmt.Println(ip)
+	fmt.Println(port)
+
+	if ip == "" || port == "" {
+		jsonResponse := &JSONResponse{Result: "ERROR", Message: "No ip or port provided in the parameters"}
 		jsonResponse.CustomResponse(logger, w, http.StatusBadRequest)
-		logger.WithField("UUID", jsonResponse.UUID).Errorf("No ip provided in the parameters")
+		logger.WithField("UUID", jsonResponse.UUID).Errorf("No ip or port provided in the parameters")
 		return
 	}
-	if port == "" {
-		jsonResponse := &JSONResponse{Result: "ERROR", Message: "No port provided in the parameters"}
-		jsonResponse.CustomResponse(logger, w, http.StatusBadRequest)
-		logger.WithField("UUID", jsonResponse.UUID).Errorf("No port provided in the parameters")
-		return
-	}
+
 	nwnOnline, serverInfo := udp.CheckNWNServer(ip, port)
 
 	if nwnOnline {

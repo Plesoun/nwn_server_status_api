@@ -22,15 +22,15 @@ type ServerInfo struct {
 	Version       string
 }
 
-// checkNWNServer checks the NWN server status using GameSpy and Eriniel methods.
+// checkNWNServer checks the NWN server status using GameSpy and BNXI methods.
 func CheckNWNServer(ipaddr, port string) (bool, *ServerInfo) {
 	nwnOnline, serverInfo := checkNWNServerGameSpy(ipaddr, port)
 	if nwnOnline {
 		return true, serverInfo
 	}
 
-	// Fallback to Eriniel method if GameSpy fails
-	return checkNWNServerEriniel(ipaddr, port)
+	// Fallback to BNXI method if GameSpy fails
+	return checkNWNServerBNXI(ipaddr, port)
 }
 
 // checkNWNServerGameSpy checks the NWN server status using the GameSpy protocol.
@@ -98,12 +98,12 @@ func checkNWNServerGameSpy(ipaddr, port string) (bool, *ServerInfo) {
 	return false, nil
 }
 
-// checkNWNServerEriniel checks the NWN server status using the Eriniel method.
-func checkNWNServerEriniel(ipaddr, port string) (bool, *ServerInfo) {
+// checkNWNServerBNXI checks the NWN server status using the BNXI method.
+func checkNWNServerBNXI(ipaddr, port string) (bool, *ServerInfo) {
 	timeout := 5 * time.Second
 	conn, err := net.DialTimeout("udp", net.JoinHostPort(ipaddr, port), timeout)
 	if err != nil {
-		fmt.Println("Eriniel: Error connecting:", err)
+		fmt.Println("BNXI: Error connecting:", err)
 		return false, nil
 	}
 	defer conn.Close()
@@ -114,14 +114,14 @@ func checkNWNServerEriniel(ipaddr, port string) (bool, *ServerInfo) {
 	send := []byte{0x42, 0x4e, 0x45, 0x53, 0x00, 0x14, 0x00}
 	_, err = conn.Write(send)
 	if err != nil {
-		fmt.Println("Eriniel: Error sending BNES:", err)
+		fmt.Println("BNXI: Error sending BNES:", err)
 		return false, nil
 	}
 
 	output := make([]byte, 500)
 	n, err := conn.Read(output)
 	if err != nil {
-		fmt.Println("Eriniel: Error reading after BNES:", err)
+		fmt.Println("BNXI: Error reading after BNES:", err)
 		return false, nil
 	}
 
@@ -134,13 +134,13 @@ func checkNWNServerEriniel(ipaddr, port string) (bool, *ServerInfo) {
 	send = []byte{0x42, 0x4e, 0x58, 0x49, 0x00, 0x14, 0x00}
 	_, err = conn.Write(send)
 	if err != nil {
-		fmt.Println("Eriniel: Error sending BNXI:", err)
+		fmt.Println("BNXI: Error sending packet:", err)
 		return false, nil
 	}
 
 	n, err = conn.Read(output)
 	if err != nil {
-		fmt.Println("Eriniel: Error reading after BNXI:", err)
+		fmt.Println("BNXI: Error reading after packet:", err)
 		return false, nil
 	}
 

@@ -2,25 +2,31 @@ package main
 
 import (
 	"fmt"
-	"nwn_server_info/udp"
+	"net/http"
+	"nwn_server_info/handlers"
+	"nwn_server_info/logging"
+	"os"
+
+	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	ipaddr := "3.64.204.102"
-	port := "5121"
+	logger, err := logging.NewLogger("stdout", "")
+	if err != nil {
+		fmt.Printf("failed to intialize logger: %s", err)
+		os.Exit(1)
+	}
+	logger.WithField("UUID", uuid.New().String()).Info("Starting http server...")
 
-	nwnOnline, serverInfo := udp.CheckNWNServer(ipaddr, port)
+	router := mux.NewRouter()
 
-	if nwnOnline {
-		fmt.Println("Server online!")
-		fmt.Println("Server name:", serverInfo.ServerName)
-		fmt.Println("Module name:", serverInfo.ModuleName)
-		fmt.Println("Players:", serverInfo.PlayersOnline, "/", serverInfo.PlayersMax)
-		fmt.Println("Description:", serverInfo.Description)
-		fmt.Println("Game Type:", serverInfo.GameType)
-		fmt.Println("PvP:", serverInfo.PvP)
-		fmt.Println("Version:", serverInfo.Version)
-	} else {
-		fmt.Println("Server offline or not responding.")
+	router.HandleFunc("/players-online", func(w http.ResponseWriter, r *http.Request) {
+		handlers.GetPlayersOnline(logger, w, r)
+	}).Methods("GET")
+
+	if err := http.ListenAndServe(":8083", router); err != nil {
+		logger.WithField("UUID", uuid.New().String()).Errorf("Failed to start server: %s", err)
+		os.Exit(1)
 	}
 }
