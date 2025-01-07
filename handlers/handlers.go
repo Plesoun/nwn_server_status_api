@@ -10,10 +10,10 @@ import (
 )
 
 type JSONResponse struct {
-	UUID    string      `json:uuid`
-	Result  string      `json:result,omitempty`
-	Message string      `json:message,omitempty`
-	Data    interface{} `json:data,omitempty`
+	UUID    string      `json:"uuid"`
+	Result  string      `json:"result,omitempty"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 func (jr *JSONResponse) CustomResponse(logger *logrus.Logger, w http.ResponseWriter, statusCode int) {
